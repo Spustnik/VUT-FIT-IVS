@@ -1,0 +1,131 @@
+
+
+#include <vector>
+
+#include "gtest/gtest.h"
+
+#include "red_black_tree.h"
+
+
+class EmptyTree : public ::testing::Test {
+protected:
+  BinaryTree tree;
+};
+
+TEST_F(EmptyTree, InsertNode) {
+  auto result = tree.InsertNode(-58);
+  EXPECT_TRUE(result.first);
+  EXPECT_EQ(result.second->key, -58);
+
+  result = tree.InsertNode(0);
+  EXPECT_TRUE(result.first);
+  EXPECT_EQ(result.second->key, 0);
+}
+
+TEST_F(EmptyTree, DeleteNode) {
+  auto result = tree.DeleteNode(0);
+  EXPECT_FALSE(result);
+}
+
+TEST_F(EmptyTree, FindNode) {
+  auto result = tree.FindNode(0);
+  EXPECT_FALSE(result);
+}
+
+class NonEmptyTree : public ::testing::Test {
+protected:
+  virtual void SetUp() {
+    int values[] = {1, 25, 3, 4, 12, 58, 754, 87, 54, 123};
+    for (int i = 0; i < 10; i++) {
+      tree.InsertNode(values[i]);
+    }
+  }
+  BinaryTree tree;
+};
+TEST_F(NonEmptyTree, InsertNode) {
+  auto result = tree.InsertNode(5);
+  EXPECT_TRUE(result.first);
+  EXPECT_EQ(result.second->key, 5);
+}
+TEST_F(NonEmptyTree, DeleteNode_01) {
+  auto result = tree.DeleteNode(1);
+  EXPECT_TRUE(result);
+}
+TEST_F(NonEmptyTree, DeleteNode_02) {
+  auto result = tree.DeleteNode(2);
+  EXPECT_FALSE(result);
+}
+TEST_F(NonEmptyTree, FindNode_01) {
+  auto result = tree.FindNode(25);
+  EXPECT_TRUE(result);
+}
+TEST_F(NonEmptyTree, FindNode_02) {
+  auto result = tree.FindNode(0);
+  EXPECT_FALSE(result);
+}
+
+class TreeAxioms : public ::testing::Test {
+protected:
+  virtual void SetUp() {
+    int values[] = {1, 25, 3, 4, 12, 58, 754, 87, 54, 123};
+    for (int i = 0; i < 10; i++) {
+      tree.InsertNode(values[i]);
+    }
+  }
+
+  BinaryTree tree;
+};
+
+TEST_F(TreeAxioms, Axiom1) {
+  std::vector<Node_t *> leaves;
+  tree.GetLeafNodes(leaves);
+
+  for (size_t i = 0; i < leaves.size(); i++) {
+    auto leaf = leaves.at(i);
+
+    auto result = leaf->color;
+
+    EXPECT_EQ(result, BLACK);
+  }
+}
+TEST_F(TreeAxioms, Axiom2) {
+  std::vector<Node_t *> nodes;
+  tree.GetNonLeafNodes(nodes);
+
+  for (size_t i = 0; i < nodes.size(); i++) {
+    auto node = nodes.at(i);
+
+    auto result = node->color;
+    if (result == RED) {
+      if (node->pLeft != nullptr) {
+        EXPECT_EQ(node->pLeft->color, BLACK);
+      }
+      if (node->pRight != nullptr) {
+        EXPECT_EQ(node->pRight->color, BLACK);
+      }
+    }
+  }
+}
+TEST_F(TreeAxioms, Axiom3) {
+  std::vector<Node_t *> nodes;
+  tree.GetLeafNodes(nodes);
+  int blackCount = 0;
+  int lastBlackCount = 0;
+  bool result = true;
+  for (size_t i = 0; i < nodes.size(); i++) {
+    auto node = nodes.at(i);
+    while (node != NULL) {
+      if (node->color == BLACK) {
+        blackCount++;
+      }
+      node = node->pParent;
+    }
+    if (lastBlackCount != blackCount && lastBlackCount != 0) {
+      result = false;
+    }
+    lastBlackCount = blackCount;
+    blackCount = 0;
+  }
+  EXPECT_TRUE(result);
+}
+
