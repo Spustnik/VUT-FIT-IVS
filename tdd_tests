@@ -1,0 +1,133 @@
+
+
+#include "tdd_code.h"
+
+Graph::Graph() {}
+
+Graph::~Graph() { clear(); }
+
+std::vector<Node *> Graph::nodes() { return array_of_nodes; }
+
+std::vector<Edge> Graph::edges() const { return array_of_edges; }
+
+Node *Graph::addNode(size_t nodeId) {
+  if (getNode(nodeId) == nullptr) {
+    Node *node = new Node(nodeId);
+    array_of_nodes.push_back(node);
+    return node;
+  } else {
+    return nullptr;
+  }
+}
+
+bool Graph::addEdge(const Edge &edge) {
+  if (edge.a == edge.b)
+    return false;
+  if (containsEdge(edge))
+    return false;
+  addNode(edge.a);
+  addNode(edge.b);
+  array_of_edges.push_back(edge);
+  return true;
+}
+
+void Graph::addMultipleEdges(const std::vector<Edge> &edges) {
+  for (auto i = 0; i < edges.size(); i++) {
+    addEdge(edges.at(i));
+  }
+}
+
+Node *Graph::getNode(size_t nodeId) {
+  for (auto i = 0; i < array_of_nodes.size(); i++) {
+    if (array_of_nodes[i]->id == nodeId) {
+      return array_of_nodes[i];
+    }
+  }
+  return nullptr;
+}
+
+bool Graph::containsEdge(const Edge &edge) const {
+  for (auto i = 0; i < array_of_edges.size(); i++) {
+    if (array_of_edges[i] == edge)
+      return true;
+  }
+  return false;
+}
+
+void Graph::removeNode(size_t nodeId) {
+  for (auto i = 0; i < array_of_nodes.size(); i++) {
+    if (array_of_nodes[i]->id == nodeId) {
+      for (auto j = 0; j < array_of_edges.size(); j++) {
+        if (array_of_edges[j].a == array_of_nodes[i]->id) {
+          removeEdge(array_of_edges[j]);
+          j--;
+        } else if (array_of_edges[j].b == array_of_nodes[i]->id) {
+          removeEdge(array_of_edges[j]);
+          j--;
+        }
+      }
+      free(array_of_nodes[i]);
+      array_of_nodes.erase(array_of_nodes.begin() + i);
+      return;
+    }
+  }
+  throw std::out_of_range("out_of_range");
+}
+
+void Graph::removeEdge(const Edge &edge) {
+  for (int i = 0; i < array_of_edges.size(); i++) {
+    if (array_of_edges[i] == edge) {
+      array_of_edges.erase(array_of_edges.begin() + i);
+      return;
+    }
+  }
+
+  throw std::out_of_range("out_of_range");
+}
+
+size_t Graph::nodeCount() const { return array_of_nodes.size(); }
+
+size_t Graph::edgeCount() const { return array_of_edges.size(); }
+
+size_t Graph::nodeDegree(size_t nodeId) const {
+  int edge = 0;
+  for (auto i = 0; i < array_of_nodes.size(); i++) {
+    if (array_of_nodes[i]->id == nodeId) {
+      for (auto i = 0; i < array_of_edges.size(); i++) {
+        if (array_of_edges[i].a == nodeId) {
+          edge++;
+        } else if (array_of_edges[i].b == nodeId) {
+          edge++;
+        }
+      }
+    }
+  }
+  if (edge > 0) {
+    return edge;
+  } else {
+    throw std::out_of_range("out_of_range");
+  }
+}
+
+size_t Graph::graphDegree() const {
+  size_t x = 0;
+  for (auto i = 0; i < array_of_nodes.size(); i++) {
+    auto Id = array_of_nodes[i]->id;
+    if (nodeDegree(Id) > x) {
+      x = nodeDegree(Id);
+    }
+  }
+
+  return x;
+}
+
+void Graph::coloring() {}
+
+void Graph::clear() {
+  // for (auto i = 0; i < array_of_edges.size(); i++) {
+  //   removeEdge(array_of_edges[i]);
+  // }
+  for (auto j = 0; j < array_of_nodes.size();) {
+    removeNode(array_of_nodes[j]->id);
+  }
+}
