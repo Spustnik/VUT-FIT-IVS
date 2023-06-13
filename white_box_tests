@@ -1,0 +1,91 @@
+
+#include <vector>
+
+#include "gtest/gtest.h"
+
+#include "white_box_code.h"
+
+
+class EmptyMap : public ::testing::Test {
+protected:
+  hash_map_t *map = hash_map_ctor();
+};
+TEST_F(EmptyMap, hash_map_dtor) { hash_map_dtor(map); };
+TEST_F(EmptyMap, hash_map_clear) {
+  hash_map_clear(map);
+  EXPECT_EQ(map->first, nullptr);
+  EXPECT_EQ(map->last, nullptr);
+  EXPECT_EQ(map->used, 0);
+};
+TEST_F(EmptyMap, hash_map_size) {
+  auto result = hash_map_size(map);
+  EXPECT_EQ(result, 0);
+};
+TEST_F(EmptyMap, hash_map_capacity) {
+  auto result = hash_map_capacity(map);
+  EXPECT_EQ(result, 8);
+};
+TEST_F(EmptyMap, hash_map_contains) {
+  bool result = hash_map_contains(map, "key");
+  EXPECT_FALSE(result);
+};
+
+TEST_F(EmptyMap, hash_map_remove) {
+  auto result = hash_map_remove(map, "key");
+  EXPECT_EQ(result, KEY_ERROR);
+};
+
+class NonEmptyMap : public ::testing::Test {
+protected:
+  virtual void SetUp() { hash_map_put(map, "map", 5); }
+  hash_map_t *map = hash_map_ctor();
+};
+TEST_F(NonEmptyMap, hash_map_dtor) { hash_map_dtor(map); };
+TEST_F(NonEmptyMap, hash_map_clear) {
+  hash_map_clear(map);
+  EXPECT_EQ(map->first, nullptr);
+  EXPECT_EQ(map->last, nullptr);
+  EXPECT_EQ(map->used, 0);
+};
+TEST_F(NonEmptyMap, hash_map_reserve_01) {
+  auto result = hash_map_reserve(map, 10);
+  EXPECT_EQ(result, OK);
+};
+TEST_F(NonEmptyMap, hash_map_reserve_02) {
+  auto result = hash_map_reserve(map, 0);
+  EXPECT_EQ(result, VALUE_ERROR);
+};
+TEST_F(NonEmptyMap, hash_map_capacity_01) {
+  auto result = hash_map_capacity(map);
+  EXPECT_EQ(result, 8);
+};
+TEST_F(NonEmptyMap, hash_map_get_01) {
+  int value;
+  auto result = hash_map_get(map, "map", &value);
+  EXPECT_EQ(result, OK);
+};
+
+TEST_F(NonEmptyMap, hash_map_get_02) {
+  int value;
+  auto result = hash_map_get(map, "key", &value);
+  EXPECT_EQ(result, KEY_ERROR);
+};
+
+TEST_F(NonEmptyMap, hash_map_contains_01) {
+  bool result = hash_map_contains(map, "map");
+  EXPECT_TRUE(result);
+};
+TEST_F(NonEmptyMap, hash_map_contains_02) {
+  bool result = hash_map_contains(map, "key");
+  EXPECT_FALSE(result);
+};
+
+TEST_F(NonEmptyMap, hash_map_remove_01) {
+  auto result = hash_map_remove(map, "map");
+  EXPECT_EQ(result, OK);
+};
+TEST_F(NonEmptyMap, hash_map_remove_02) {
+  auto result = hash_map_remove(map, "key");
+  EXPECT_EQ(result, KEY_ERROR);
+};
+
